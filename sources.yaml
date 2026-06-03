@@ -1,0 +1,92 @@
+sources:
+  - name: Brookings
+    website: https://www.brookings.edu
+    rss: https://www.brookings.edu/feed/
+    enabled: true
+    priority: 5
+    topics: [China, Taiwan, Indo-Pacific, US-China Relations, Economics, Technology]
+    tags: [think-tank, us, policy]
+  - name: Chatham House
+    website: https://www.chathamhouse.org
+    rss: https://www.chathamhouse.org/rss.xml
+    enabled: true
+    priority: 5
+    topics: [China, Europe, Russia, Middle East, Energy, Economics]
+    tags: [think-tank, uk, international-affairs]
+  - name: CSIS
+    website: https://www.csis.org
+    rss: https://www.csis.org/rss.xml
+    enabled: true
+    priority: 5
+    topics: [China, Taiwan, Indo-Pacific, Defense, Technology, AI, Semiconductors]
+    tags: [think-tank, us, strategy]
+  - name: CFR
+    website: https://www.cfr.org
+    rss: https://www.cfr.org/rss
+    enabled: true
+    priority: 5
+    topics: [China, US-China Relations, Economics, Trade, Middle East, Russia]
+    tags: [think-tank, us, foreign-policy]
+  - name: Carnegie
+    website: https://carnegieendowment.org
+    rss: https://carnegieendowment.org/rss
+    enabled: true
+    priority: 5
+    topics: [China, Russia, Middle East, Technology, Economics, Trade]
+    tags: [think-tank, us, global]
+  - name: IISS
+    website: https://www.iiss.org
+    rss: https://www.iiss.org/rss
+    enabled: true
+    priority: 5
+    topics: [Defense, Military, Indo-Pacific, China, Europe, Middle East]
+    tags: [think-tank, uk, security]
+  - name: RAND
+    website: https://www.rand.org
+    rss: https://www.rand.org/topics/china.rss
+    enabled: true
+    priority: 4
+    topics: [China, Defense, Military, AI, Technology, Economics]
+    tags: [think-tank, us, research]
+  - name: Atlantic Council
+    website: https://www.atlanticcouncil.org
+    rss: https://www.atlanticcouncil.org/feed/
+    enabled: true
+    priority: 4
+    topics: [China, Europe, Russia, Energy, Defense, Technology]
+    tags: [think-tank, us, transatlantic]
+  - name: Lowy Institute
+    website: https://www.lowyinstitute.org
+    rss: https://www.lowyinstitute.org/the-interpreter/rss.xml
+    enabled: true
+    priority: 4
+    topics: [Indo-Pacific, China, Taiwan, Defense, Trade, Economics]
+    tags: [think-tank, australia, indo-pacific]
+  - name: ISEAS
+    website: https://www.iseas.edu.sg
+    rss: https://www.iseas.edu.sg/feed/
+    enabled: true
+    priority: 4
+    topics: [Indo-Pacific, China, Trade, Economics, Defense, Energy]
+    tags: [think-tank, singapore, southeast-asia]
+  - name: ASPI
+    website: https://www.aspi.org.au
+    rss: https://www.aspistrategist.org.au/feed/
+    enabled: true
+    priority: 4
+    topics: [China, Indo-Pacific, Defense, Military, Technology, AI]
+    tags: [think-tank, australia, security]
+  - name: ECFR
+    website: https://ecfr.eu
+    rss: https://ecfr.eu/feed/
+    enabled: true
+    priority: 4
+    topics: [Europe, China, Russia, Middle East, Energy, Trade]
+    tags: [think-tank, europe, foreign-policy]
+  - name: MERICS
+    website: https://merics.org
+    rss: https://merics.org/en/rss.xml
+    enabled: true
+    priority: 5
+    topics: [China, Europe, US-China Relations, Technology, Economics, Trade]
+    tags: [think-tank, germany, china]
