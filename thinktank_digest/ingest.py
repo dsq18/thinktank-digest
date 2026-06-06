@@ -43,6 +43,28 @@ def _parse_date(value: object) -> datetime | None:
     return None
 
 
+def _extract_publish_date_from_html(soup: BeautifulSoup) -> datetime | None:
+    selectors = [
+        ("meta", {"property": "article:published_time"}),
+        ("meta", {"name": "date"}),
+        ("meta", {"name": "publishdate"}),
+        ("meta", {"name": "pubdate"}),
+        ("meta", {"itemprop": "datePublished"}),
+    ]
+    for tag_name, attrs in selectors:
+        tag = soup.find(tag_name, attrs=attrs)
+        if tag and tag.get("content"):
+            parsed = _parse_date(tag["content"])
+            if parsed:
+                return parsed
+    time_tag = soup.find("time")
+    if time_tag:
+        parsed = _parse_date(time_tag.get("datetime") or time_tag.get_text(" ", strip=True))
+        if parsed:
+            return parsed
+    return None
+
+
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=8))
 def fetch_url(client: httpx.Client, url: str) -> str:
     response = client.get(url, headers={"User-Agent": USER_AGENT})
@@ -173,17 +195,20 @@ def discover_articles(sources: list[Source], timeout: float = 20.0) -> list[RawA
 
 
 def hydrate_article_text(article: RawArticle, timeout: float = 20.0) -> RawArticle:
+    publish_date = article.publish_date
     with httpx.Client(timeout=timeout, follow_redirects=True) as client:
         try:
             html = fetch_url(client, article.url)
             text = extract_article_text(html, article.url)
+            if publish_date is None:
+                publish_date = _extract_publish_date_from_html(BeautifulSoup(html, "html.parser"))
         except Exception as exc:
             LOGGER.warning("Article extraction failed for %s: %s", article.url, exc)
             text = ""
     return RawArticle(
         title=article.title,
         url=article.url,
-        publish_date=article.publish_date,
+        publish_date=publish_date,
         source=article.source,
         source_priority=article.source_priority,
         text=text,

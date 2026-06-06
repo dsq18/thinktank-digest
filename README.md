@@ -142,7 +142,7 @@ thinktank-digest source-command "Set priority Brookings 5"
    - `EMAIL_ADDRESS`
    - `EMAIL_AUTH_CODE`
    - `EMAIL_TO`
-3. 确认 `.github/workflows/daily-digest.yml` 已存在。
+3. 确认 `.github/workflows/thinktank-digest.yml` 已存在。
 4. workflow 会使用：
 
 ```cron
@@ -153,18 +153,13 @@ GitHub Actions cron 使用 UTC，因此这是 Asia/Singapore 每天 08:00。
 
 workflow 会缓存 `data/` 目录，让 SQLite 去重状态跨运行保存。也可以在 Actions 页面手动触发 `workflow_dispatch`。
 
-每日真实发送前，workflow 会先执行：
+每日真实发送前，workflow 会先执行编译检查、pytest 和 SMTP 环境变量检查。全部通过后，才会运行真实日报发送：
 
 ```bash
-thinktank-digest --db data/self_review.sqlite self-review --out-dir reports/self-review
-thinktank-digest check-email-env
+thinktank-digest run --max-articles 80 --html-out reports/latest.html --text-out reports/latest.txt
 ```
 
-只有 self-review 和 SMTP 环境变量检查通过后，才会运行真实日报发送：
-
-```bash
-thinktank-digest run
-```
+workflow 还会上传 `reports/` 作为 artifact，方便你在 GitHub Actions 页面查看当日 HTML 和纯文本报告。
 
 如果你在今天完成推送并配置好 GitHub Secrets，下一次计划任务会在明天 08:00 Asia/Singapore 发送第一封真实简报。GitHub Actions 的定时触发和 NetEase SMTP 认证结果取决于 GitHub 仓库、Secrets 和邮箱授权码是否已正确配置。
 

@@ -29,7 +29,6 @@ def heuristic_relevance(article: RawArticle) -> bool:
         "military",
         "technology",
         "artificial intelligence",
-        " ai ",
         "semiconductor",
         "geoeconomic",
         "trade",
@@ -37,7 +36,7 @@ def heuristic_relevance(article: RawArticle) -> bool:
         "russia",
         "middle east",
     ]
-    return any(hit in text for hit in priority_hits)
+    return any(hit in text for hit in priority_hits) or re.search(r"\bai\b", text) is not None
 
 
 def _extract_json(text: str) -> dict:
@@ -130,7 +129,7 @@ def fallback_analysis(article: RawArticle) -> Analysis:
         "Indo-Pacific": ["indo-pacific", "indopacific", "south china sea", "asean"],
         "US-China Relations": ["u.s.-china", "us-china", "united states and china"],
         "Technology": ["technology", "tech", "digital"],
-        "AI": ["artificial intelligence", " ai ", "machine learning"],
+        "AI": ["artificial intelligence", "machine learning"],
         "Semiconductors": ["semiconductor", "chip"],
         "Defense": ["defense", "defence", "security"],
         "Military": ["military", "armed forces"],
@@ -142,7 +141,7 @@ def fallback_analysis(article: RawArticle) -> Analysis:
         "Middle East": ["middle east", "iran", "israel", "gulf"],
     }
     for tag, needles in mapping.items():
-        if any(needle in text for needle in needles):
+        if any(needle in text for needle in needles) or (tag == "AI" and re.search(r"\bai\b", text)):
             tags.append(tag)
     strategic = any(tag in tags for tag in ["China", "Taiwan", "Indo-Pacific", "Defense", "AI"])
     importance = min(5, max(2, article.source_priority + (1 if strategic else 0) - 1))

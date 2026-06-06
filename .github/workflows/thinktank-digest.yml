@@ -2,13 +2,28 @@ name: ThinkTank Digest
 
 on:
   schedule:
-    # 每天 08:00 Asia/Singapore = 00:00 UTC
+    # GitHub Actions cron is UTC. 00:00 UTC = 08:00 Asia/Singapore.
     - cron: "0 0 * * *"
-  workflow_dispatch:  # 支持手动触发
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: thinktank-digest-daily
+  cancel-in-progress: false
 
 jobs:
   send-digest:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      EMAIL_SMTP_HOST: smtp.163.com
+      EMAIL_SMTP_PORT: "465"
+      EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+      EMAIL_AUTH_CODE: ${{ secrets.EMAIL_AUTH_CODE }}
+      EMAIL_TO: ${{ secrets.EMAIL_TO }}
 
     steps:
       - name: Checkout repo
@@ -18,77 +33,45 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
-      - name: Install package
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-
-      - name: Verify required secrets
-        env:
-          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
-          EMAIL_AUTH_CODE: ${{ secrets.EMAIL_AUTH_CODE }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
-        run: |
-          missing=0
-          [ -z "$EMAIL_ADDRESS" ] && echo "Missing secret: EMAIL_ADDRESS" && missing=1
-          [ -z "$EMAIL_AUTH_CODE" ] && echo "Missing secret: EMAIL_AUTH_CODE" && missing=1
-          [ -z "$EMAIL_TO" ] && echo "Missing secret: EMAIL_TO" && missing=1
-          exit $missing
-
-      - name: Run compile check
-        run: python -m compileall thinktank_digest tests
-
-   name: ThinkTank Digest
-
-on:
-  schedule:
-    # 每天 08:00 Asia/Singapore = 00:00 UTC
-    - cron: "0 0 * * *"
-  workflow_dispatch:  # 支持手动触发
-
-jobs:
-  send-digest:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Restore SQLite cache
+        uses: actions/cache@v4
         with:
-          python-version: "3.11"
+          path: data
+          key: ${{ runner.os }}-thinktank-db-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-thinktank-db-
 
       - name: Install package
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-
-      - name: Verify required secrets
-        env:
-          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
-          EMAIL_AUTH_CODE: ${{ secrets.EMAIL_AUTH_CODE }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
-        run: |
-          missing=0
-          [ -z "$EMAIL_ADDRESS" ] && echo "Missing secret: EMAIL_ADDRESS" && missing=1
-          [ -z "$EMAIL_AUTH_CODE" ] && echo "Missing secret: EMAIL_AUTH_CODE" && missing=1
-          [ -z "$EMAIL_TO" ] && echo "Missing secret: EMAIL_TO" && missing=1
-          exit $missing
+          python -m pip install -e ".[dev]"
 
       - name: Run compile check
         run: python -m compileall thinktank_digest tests
 
       - name: Run tests
-        run: pytest
+        run: python -m pytest
 
-      - name: Run self-review and send email
-        env:
-          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
-          EMAIL_AUTH_CODE: ${{ secrets.EMAIL_AUTH_CODE }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
-          THINKTANK_DIGEST_MANUAL_TEST: ${{ github.event_name == 'workflow_dispatch' }}
+      - name: Validate OpenAI API key
         run: |
-          thinktank-digest self-review
+          [ -n "$OPENAI_API_KEY" ] || (echo "Missing secret: OPENAI_API_KEY" && exit 1)
 
+      - name: Validate NetEase SMTP environment
+        run: thinktank-digest check-email-env
+
+      - name: Generate and send daily digest
+        run: >
+          thinktank-digest run
+          --max-articles 80
+          --html-out reports/latest.html
+          --text-out reports/latest.txt
+
+      - name: Upload generated report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: thinktank-digest-report
+          path: reports/
+          if-no-files-found: ignore

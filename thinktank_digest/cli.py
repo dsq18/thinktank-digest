@@ -4,12 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from .emailer import send_email, validate_email_environment
 from .logging_utils import configure_logging
-from .pipeline import run_daily_digest
-from .report import render_html, render_plain_text
-from .self_review import run_self_review
-from .staging import run_staging_workflow
 from .sources import SourceRegistryError, apply_natural_command, load_sources
 
 
@@ -79,6 +74,9 @@ def main(argv: list[str] | None = None) -> None:
 
     try:
         if args.command == "run":
+            from .pipeline import run_daily_digest
+            from .report import render_html, render_plain_text
+
             report = run_daily_digest(
                 sources_path=args.sources,
                 db_path=db_path,
@@ -95,6 +93,8 @@ def main(argv: list[str] | None = None) -> None:
             return
 
         if args.command == "staging":
+            from .staging import run_staging_workflow
+
             result = run_staging_workflow(
                 sources_path=args.sources,
                 db_path=db_path,
@@ -104,6 +104,8 @@ def main(argv: list[str] | None = None) -> None:
             return
 
         if args.command == "self-review":
+            from .self_review import run_self_review
+
             result = run_self_review(
                 project_root=PROJECT_ROOT,
                 sources_path=args.sources,
@@ -115,11 +117,15 @@ def main(argv: list[str] | None = None) -> None:
             return
 
         if args.command == "check-email-env":
+            from .emailer import validate_email_environment
+
             validate_email_environment()
             print("Email environment OK.")
             return
 
         if args.command == "send-test-email":
+            from .emailer import send_email
+
             recipient = send_email(
                 args.subject,
                 "<p>ThinkTank-Digest SMTP 测试邮件。若你收到此邮件，NetEase SMTP 配置可用。</p>",

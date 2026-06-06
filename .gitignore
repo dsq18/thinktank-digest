@@ -4,3 +4,9 @@ __pycache__/
 .env
 .venv/
 venv/
+data/
+reports/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+.pytest_cache/

@@ -35,7 +35,7 @@ def load_sources(path: Path) -> list[Source]:
     for record in records:
         if not isinstance(record, dict):
             raise SourceRegistryError("each source must be a mapping")
-        for field in ("name", "website", "enabled", "priority", "topics", "tags"):
+        for field in ("name", "website", "rss", "enabled", "priority", "topics", "tags"):
             if field not in record:
                 raise SourceRegistryError(f"source is missing required field: {field}")
         sources.append(
